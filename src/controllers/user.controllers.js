@@ -57,8 +57,15 @@ ${requirements}
     `.trim(),
   };
 
-  const sendResult = await sendEmail(emailOptions);
-  if (!sendResult) throw new ApiError(500, "Failed to send email.");
+    const admins = process.env.EMAIL_TO_SEND.split(","); // comma-separated emails in .env
+  try {
+    await Promise.all(admins.map((adminEmail) => sendEmail({ ...emailOptions, to: adminEmail })));
+    console.log("✅ Emails sent to all admins");
+  } catch (err) {
+    console.error("❌ Failed to send email to admins:", err);
+    throw new ApiError(500, "Failed to send email.");
+  }
+
 
   // ---------------- FORMAT DATETIME ----------------
   const formattedDateTime = new Date().toLocaleString("en-IN", {
